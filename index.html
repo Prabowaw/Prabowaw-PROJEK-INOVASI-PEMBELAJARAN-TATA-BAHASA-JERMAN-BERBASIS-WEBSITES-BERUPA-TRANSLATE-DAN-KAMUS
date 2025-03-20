@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penerjemah Indonesia-Jerman</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            width: 50%;
+            margin: auto;
+        }
+        textarea {
+            width: 90%;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #ffcc00;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #ffaa00;
+        }
+        select {
+            margin-bottom: 10px;
+            padding: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Penerjemah Indonesia ⇄ Jerman</h2>
+        <select id="languagePair">
+            <option value="id|de">Indonesia ke Jerman</option>
+            <option value="de|id">Jerman ke Indonesia</option>
+        </select>
+        <button onclick="swapLanguage()">🔄 Tukar Bahasa</button><br>
+        <textarea id="inputText" placeholder="Masukkan teks..."></textarea><br>
+        <button onclick="translateText()">Terjemahkan</button>
+        <button onclick="copyResult()">📋 Salin Hasil</button>
+        <button onclick="speakTranslation()">🔊 Dengarkan</button>
+        <button onclick="clearText()">❌ Hapus Teks</button>
+        <h3>Hasil:</h3>
+        <textarea id="outputText" readonly></textarea>
+        <p id="statusMessage"></p>
+    </div>
+
+    <script>
+        function swapLanguage() {
+            let select = document.getElementById("languagePair");
+            select.value = select.value === "id|de" ? "de|id" : "id|de";
+        }
+        
+        function translateText() {
+            const text = document.getElementById("inputText").value.trim();
+            const languagePair = document.getElementById("languagePair").value;
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${languagePair}`;
+            const statusMessage = document.getElementById("statusMessage");
+            
+            if (text === "") {
+                statusMessage.innerText = "Masukkan teks untuk diterjemahkan.";
+                return;
+            }
+            
+            statusMessage.innerText = "Menerjemahkan...";
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.responseData && data.responseData.translatedText) {
+                        document.getElementById("outputText").value = data.responseData.translatedText;
+                        statusMessage.innerText = "Terjemahan berhasil.";
+                    } else {
+                        statusMessage.innerText = "Gagal menerjemahkan. Coba lagi nanti.";
+                    }
+                })
+                .catch(() => statusMessage.innerText = "Terjadi kesalahan dalam penerjemahan.");
+        }
+        
+        function copyResult() {
+            const outputText = document.getElementById("outputText");
+            outputText.select();
+            document.execCommand("copy");
+        }
+        
+        function speakTranslation() {
+            const outputText = document.getElementById("outputText").value;
+            const languagePair = document.getElementById("languagePair").value;
+            let lang = languagePair === "id|de" ? "de-DE" : "id-ID";
+            let speech = new SpeechSynthesisUtterance(outputText);
+            speech.lang = lang;
+            window.speechSynthesis.speak(speech);
+        }
+        
+        function clearText() {
+            document.getElementById("inputText").value = "";
+            document.getElementById("outputText").value = "";
+            document.getElementById("statusMessage").innerText = "";
+        }
+    </script>
+</body>
+</html>
